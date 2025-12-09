@@ -6,16 +6,16 @@
 
 Production-ready Flutter application with complete CI/CD pipeline, automated testing, and multi-environment support.
 
-## 🚀 Features
+## Features
 
-- ✅ **GitHub Actions CI/CD** - Automated testing and deployment
-- 📊 **Code Quality Gates** - Strict linting and 70%+ test coverage
-- 🌍 **Multi-Environment** - Dev, Staging, and Production configurations
-- 🏗️ **Parallel Builds** - Android APK and Web builds
-- 🏷️ **Automated Versioning** - Auto-increment and Git tagging
-- 🔄 **Dependency Caching** - Fast CI runs with smart caching
+- **GitHub Actions CI/CD** - Automated testing and deployment
+- **Code Quality Gates** - Strict linting and 70%+ test coverage
+- **Multi-Environment** - Dev, Staging, and Production configurations
+- **Parallel Builds** - Android APK and Web builds
+- **Automated Versioning** - Auto-increment and Git tagging
+- **Dependency Caching** - Fast CI runs with smart caching
 
-## 📦 Environments
+## Environments
 
 Run the app in different environments:
 
@@ -30,7 +30,7 @@ flutter run --dart-define=BUILD_ENV=staging --dart-define=API_URL=https://api-st
 flutter run --dart-define=BUILD_ENV=prod --dart-define=API_URL=https://api.example.com
 ```
 
-## 🧪 Testing
+## Testing
 
 Run tests with coverage:
 
@@ -45,7 +45,7 @@ flutter test --coverage
 bash scripts/check_coverage.sh
 ```
 
-## 🛠️ Development
+## Development
 
 ### Prerequisites
 
@@ -79,11 +79,12 @@ flutter analyze --fatal-infos
 dart format . && flutter analyze && flutter test --coverage
 ```
 
-## 🔄 CI/CD Pipeline
+## CI/CD Pipeline
 
 ### Workflows
 
 1. **Flutter CI** (`.github/workflows/ci.yml`)
+
    - Runs on: Push to `develop` or `main`, Pull Requests
    - Jobs: `analyze` → `test` → `build-android` + `build-web` (parallel)
    - Includes: Code formatting, static analysis, tests, coverage check
@@ -98,16 +99,16 @@ dart format . && flutter analyze && flutter test --coverage
 - `develop` - Integration branch
 - `feature/*` - Feature branches
 
-## 📊 Project Statistics
+## Project Statistics
 
 - **Test Coverage**: 70%+ required
 - **Build Time**: ~2-3 minutes with caching
 - **Supported Platforms**: Android, Web
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 👨‍💻 Author
+## Author
 
 Andrii Androman (@andromaan)
