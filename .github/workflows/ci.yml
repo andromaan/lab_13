@@ -1,34 +1,95 @@
-# Основний CI workflow
-# Заповніть jobs згідно ТЗ
 name: Flutter CI
+
 on:
   push:
-    branches: [develop, main]
+    branches: [ develop, main ]
   pull_request:
-    branches: [develop, main]
+    branches: [ develop, main ]
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
     steps:
-      # TODO: Checkout code
-      # TODO: Setup Flutter
-      # TODO: Install dependencies
-      # TODO: Verify formatting
-      # TODO: Analyze code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Verify formatting
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: Analyze code
+        run: flutter analyze --fatal-infos
+
   test:
     needs: analyze
     runs-on: ubuntu-latest
     steps:
-      # TODO: Checkout code
-      # TODO: Setup Flutter
-      # TODO: Run tests with coverage
-      # TODO: Check coverage threshold (70%)
-      # TODO: Upload coverage report
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Check coverage threshold
+        run: |
+          if ! command -v lcov &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y lcov
+          fi
+          COVERAGE=$(lcov --summary coverage/lcov.info | grep "lines" | awk '{print $2}' | cut -d'%' -f1)
+          echo "Current coverage: ${COVERAGE}%"
+          echo "Minimum required: 70%"
+          if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below minimum 70%"
+            exit 1
+          else
+            echo "Coverage check passed!"
+          fi
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-report
+          path: coverage/lcov.info
+
   build:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      # TODO: Checkout code
-      # TODO: Setup Flutter
-      # TODO: Build APK
-      # TODO: Upload build artifacts
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --dart-define=BUILD_ENV=prod --dart-define=API_URL=https://api.example.com
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
