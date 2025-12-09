@@ -1,0 +1,34 @@
+# Основний CI workflow
+# Заповніть jobs згідно ТЗ
+name: Flutter CI
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      # TODO: Checkout code
+      # TODO: Setup Flutter
+      # TODO: Install dependencies
+      # TODO: Verify formatting
+      # TODO: Analyze code
+  test:
+    needs: analyze
+    runs-on: ubuntu-latest
+    steps:
+      # TODO: Checkout code
+      # TODO: Setup Flutter
+      # TODO: Run tests with coverage
+      # TODO: Check coverage threshold (70%)
+      # TODO: Upload coverage report
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      # TODO: Checkout code
+      # TODO: Setup Flutter
+      # TODO: Build APK
+      # TODO: Upload build artifacts
