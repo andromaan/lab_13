@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - 'docs/**'
+
+jobs:
+  version-bump:
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      version_changed: ${{ steps.bump.outputs.version_changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: bump
+        run: |
+          CURRENT_VERSION=$(grep "version:" pubspec.yaml | awk '{print $2}')
+          VERSION_NAME=$(echo $CURRENT_VERSION | cut -d'+' -f1)
+          BUILD_NUMBER=$(echo $CURRENT_VERSION | cut -d'+' -f2)
+          
+          NEW_BUILD_NUMBER=$((BUILD_NUMBER + 1))
+          NEW_VERSION="${VERSION_NAME}+${NEW_BUILD_NUMBER}"
+          
+          sed -i "s/version: ${CURRENT_VERSION}/version: ${NEW_VERSION}/" pubspec.yaml
+          
+          echo "new_version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "version_changed=true" >> $GITHUB_OUTPUT
+          
+          echo "Version bumped: ${CURRENT_VERSION} -> ${NEW_VERSION}"
+
+      - name: Commit version bump
+        run: |
+          git add pubspec.yaml
+          git commit -m "chore: bump version to ${{ steps.bump.outputs.new_version }} [skip ci]"
+          git push
+
+      - name: Create tag
+        run: |
+          git tag "v${{ steps.bump.outputs.new_version }}"
+          git push origin "v${{ steps.bump.outputs.new_version }}"
+
+  build-release:
+    needs: version-bump
+    if: needs.version-bump.outputs.version_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            **/.dart_tool
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.35.3"
+          channel: "stable"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --release --dart-define=BUILD_ENV=prod --dart-define=API_URL=https://api.example.com
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.version-bump.outputs.new_version }}
+          name: Release v${{ needs.version-bump.outputs.new_version }}
+          draft: false
+          prerelease: false
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
